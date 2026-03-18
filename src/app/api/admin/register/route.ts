@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     }
 
     // 检查用户名是否已存在
-    const existingUser = getUserByUsername(username);
+    const existingUser = await getUserByUsername(username);
     if (existingUser) {
       return NextResponse.json({ error: '用户名已存在' }, { status: 400 });
     }
