@@ -29,12 +29,16 @@ export async function POST(request: Request) {
     }
 
     if (action === 'restore') {
-      userIds.forEach((id: string) => restoreUser(id));
+      for (const id of userIds) {
+        await restoreUser(id);
+      }
       return NextResponse.json({ success: true });
     }
     
     if (action === 'permanentDelete') {
-      userIds.forEach((id: string) => permanentlyDeleteUser(id));
+      for (const id of userIds) {
+        await permanentlyDeleteUser(id);
+      }
       return NextResponse.json({ success: true });
     }
 

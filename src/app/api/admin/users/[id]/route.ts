@@ -30,7 +30,9 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: '不能删除当前登录用户' }, { status: 400 });
     }
 
-    userIds.forEach((id: string) => softDeleteUser(id));
+    for (const id of userIds) {
+      await softDeleteUser(id);
+    }
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: '操作失败' }, { status: 500 });
@@ -64,7 +66,9 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: '不能删除当前登录用户' }, { status: 400 });
     }
 
-    userIds.forEach((id: string) => deleteUser(id));
+    for (const id of userIds) {
+      await deleteUser(id);
+    }
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: '操作失败' }, { status: 500 });

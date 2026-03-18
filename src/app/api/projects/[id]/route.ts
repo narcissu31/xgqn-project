@@ -24,20 +24,20 @@ export async function GET(
   }
 
   const { id } = await params;
-  const project = getProjectById(id);
+  const project = await getProjectById(id);
 
   if (!project) {
     return NextResponse.json({ error: '项目不存在' }, { status: 404 });
   }
 
   // 获取项目材料，如果没有则创建
-  let materials = getMaterialsByProjectId(id);
+  let materials = await getMaterialsByProjectId(id);
   
   // 检查是否有项目材料，如果没有则创建
   const hasProjectMaterials = materials.some((m: any) => m.isProjectMaterial);
   if (!hasProjectMaterials) {
-    batchCreateProjectMaterials(id, PROJECT_MATERIALS.map(p => p.name));
-    materials = getMaterialsByProjectId(id);
+    await batchCreateProjectMaterials(id, PROJECT_MATERIALS.map(p => p.name));
+    materials = await getMaterialsByProjectId(id);
   }
 
   return NextResponse.json({
@@ -64,7 +64,7 @@ export async function PUT(
     const body = await request.json();
     const { projectName, projectManager, projectNumber, selectedProducts } = body;
 
-    const project = getProjectById(id);
+    const project = await getProjectById(id);
     if (!project) {
       return NextResponse.json({ error: '项目不存在' }, { status: 404 });
     }
@@ -104,7 +104,7 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    const project = getProjectById(id);
+    const project = await getProjectById(id);
     if (!project) {
       return NextResponse.json({ error: '项目不存在' }, { status: 404 });
     }
@@ -113,7 +113,7 @@ export async function DELETE(
       return NextResponse.json({ error: '无权删除此项目' }, { status: 403 });
     }
 
-    deleteProjectWithFiles(id);
+    await deleteProjectWithFiles(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('删除失败:', error);
@@ -136,7 +136,7 @@ export async function PATCH(
   const { id } = await params;
 
   try {
-    const project = getProjectById(id);
+    const project = await getProjectById(id);
     if (!project) {
       return NextResponse.json({ error: '项目不存在' }, { status: 404 });
     }
@@ -145,7 +145,7 @@ export async function PATCH(
       return NextResponse.json({ error: '无权删除此项目' }, { status: 403 });
     }
 
-    softDeleteProject(id);
+    await softDeleteProject(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('软删除失败:', error);

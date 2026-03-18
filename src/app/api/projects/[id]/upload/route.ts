@@ -51,7 +51,7 @@ export async function POST(
   }
 
   // 检查材料是否存在
-  const material = getMaterialById(materialId);
+  const material = await getMaterialById(materialId);
   if (!material) {
     return NextResponse.json({ error: '材料不存在' }, { status: 404 });
   }
@@ -65,11 +65,11 @@ export async function POST(
     
     if (isImg) {
       const newImages = [...(material.images || []), filePath];
-      const updated = updateMaterial(materialId, { images: newImages });
+      const updated = await updateMaterial(materialId, { images: newImages });
       return NextResponse.json(updated);
     } else {
       const newFiles = [...(material.files || []), filePath];
-      const updated = updateMaterial(materialId, { files: newFiles });
+      const updated = await updateMaterial(materialId, { files: newFiles });
       return NextResponse.json(updated);
     }
   } catch (error) {
@@ -93,7 +93,7 @@ export async function DELETE(
   const { materialId, type, index } = await request.json();
 
   try {
-    const material = getMaterialById(materialId);
+    const material = await getMaterialById(materialId);
     if (!material) {
       return NextResponse.json({ error: '材料不存在' }, { status: 404 });
     }
@@ -108,7 +108,7 @@ export async function DELETE(
         }
       }
       const newImages = (material.images || []).filter((_: any, i: number) => i !== index);
-      const updated = updateMaterial(materialId, { images: newImages });
+      const updated = await updateMaterial(materialId, { images: newImages });
       return NextResponse.json(updated);
     } else if (type === 'file') {
       const filePath = material.files?.[index];
@@ -119,7 +119,7 @@ export async function DELETE(
         }
       }
       const newFiles = (material.files || []).filter((_: any, i: number) => i !== index);
-      const updated = updateMaterial(materialId, { files: newFiles });
+      const updated = await updateMaterial(materialId, { files: newFiles });
       return NextResponse.json(updated);
     }
     

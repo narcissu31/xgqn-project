@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
     // 创建管理员账户
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const user = createUser(username, hashedPassword, 'admin');
+    const user = await createUser(username, hashedPassword, 'admin');
 
     return NextResponse.json({
       id: user.id,

@@ -42,11 +42,12 @@ export async function POST(request: Request) {
     }
 
     let successCount = 0;
-    userIds.forEach((userId: string) => {
-      if (resetUserPassword(userId, newPassword)) {
+    for (const userId of userIds) {
+      const result = await resetUserPassword(userId, newPassword);
+      if (result) {
         successCount++;
       }
-    });
+    }
 
     if (successCount > 0) {
       return NextResponse.json({ success: true, count: successCount });

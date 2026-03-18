@@ -24,7 +24,7 @@ export async function POST(
       return NextResponse.json({ error: '缺少参数' }, { status: 400 });
     }
 
-    batchCreateProductMaterials(id, productionLineId, productId, materialNames);
+    await batchCreateProductMaterials(id, productionLineId, productId, materialNames);
     
     return NextResponse.json({ success: true });
   } catch (error) {

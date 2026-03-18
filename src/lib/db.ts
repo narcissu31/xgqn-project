@@ -2,6 +2,27 @@ import { v4 as uuidv4 } from 'uuid';
 
 // ==================== D1 数据库接口 ====================
 
+declare global {
+  interface D1Database {
+    prepare(query: string): D1PreparedStatement;
+    exec(query: string): Promise<D1ExecResult>;
+  }
+  interface D1PreparedStatement {
+    bind(...values: any[]): D1PreparedStatement;
+    first<T = any>(): Promise<T | null>;
+    all<T = any>(): Promise<{ results: T[] }>;
+    run(): Promise<D1Result>;
+  }
+  interface D1Result {
+    success: boolean;
+    meta?: any;
+  }
+  interface D1ExecResult {
+    success: boolean;
+    meta?: any;
+  }
+}
+
 function getDB(): D1Database {
   try {
     // Cloudflare Workers 环境：通过 getRequestContext 获取

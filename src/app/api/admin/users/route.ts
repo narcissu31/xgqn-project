@@ -35,7 +35,7 @@ export async function GET() {
   }
 
   try {
-    const users = getAllUsers();
+    const users = await getAllUsers();
     // 返回用户列表，包含deletedAt字段
     const safeUsers = users.map((u: any) => ({
       id: u.id,
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     }
 
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const user = createUser(username, hashedPassword, userRole || 'user');
+    const user = await createUser(username, hashedPassword, userRole || 'user');
     
     return NextResponse.json({
       id: user.id,
@@ -124,7 +124,9 @@ export async function PUT(request: Request) {
 
     // 软删除用户
     const { softDeleteUser } = require('@/lib/db');
-    userIds.forEach((id: string) => softDeleteUser(id));
+    for (const id of userIds) {
+      await softDeleteUser(id);
+    }
     
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -15,7 +15,7 @@ export async function GET() {
   const userId = (session.user as any).id;
 
   try {
-    const projects = role === 'admin' ? getAllProjects() : getProjectsByUserId(userId);
+    const projects = role === 'admin' ? await getAllProjects() : await getProjectsByUserId(userId);
     return NextResponse.json(projects);
   } catch (error) {
     return NextResponse.json({ error: '获取项目失败' }, { status: 500 });
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const project = createProject({
+    const project = await createProject({
       projectName,
       projectManager,
       projectNumber,
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       const products = getBaixiaoProducts(template);
       
       // 更新项目的 selectedProducts
-      updateProject(project.id, { selectedProducts: products });
+      await updateProject(project.id, { selectedProducts: products });
       
       // 为每个产品创建材料记录
       for (const productId of products) {
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
         for (const line of PRODUCTION_LINES) {
           const product = line.products.find(p => p.id === productId);
           if (product) {
-            batchCreateProductMaterials(
+            await batchCreateProductMaterials(
               project.id,
               line.id,
               productId,
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
     }
 
     // 创建项目材料（第二部分）
-    batchCreateProjectMaterials(project.id, PROJECT_MATERIALS.map(p => p.name));
+    await batchCreateProjectMaterials(project.id, PROJECT_MATERIALS.map(p => p.name));
 
     return NextResponse.json(project);
   } catch (error) {

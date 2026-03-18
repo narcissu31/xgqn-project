@@ -21,7 +21,7 @@ export async function POST(
       return NextResponse.json({ error: '缺少参数' }, { status: 400 });
     }
 
-    const material = getOrCreateMaterial(projectId, materialName, materialGroup, productionLineId, isProjectMaterial);
+    const material = await getOrCreateMaterial(projectId, materialName, materialGroup, productionLineId, isProjectMaterial);
     
     return NextResponse.json(material);
   } catch (error) {

@@ -15,7 +15,7 @@ export async function GET() {
     const role = (session.user as any).role;
     const userId = (session.user as any).id;
     
-    let projects = getDeletedProjects();
+    let projects = await getDeletedProjects();
     
     // 非管理员只能看到自己删除的项目
     if (role !== 'admin') {
@@ -48,7 +48,9 @@ export async function POST(request: Request) {
     if (action === 'restore') {
       // 恢复项目
       if (projectIds && Array.isArray(projectIds)) {
-        projectIds.forEach((id: string) => restoreProject(id));
+        for (const id of projectIds) {
+          await restoreProject(id);
+        }
       }
       return NextResponse.json({ success: true });
     }
@@ -56,12 +58,13 @@ export async function POST(request: Request) {
     if (action === 'permanentDelete') {
       // 彻底删除
       if (projectIds && Array.isArray(projectIds)) {
-        projectIds.forEach((id: string) => {
-          const project = getDeletedProjects().find((p: any) => p.id === id);
+        const deletedProjects = await getDeletedProjects();
+        for (const id of projectIds) {
+          const project = deletedProjects.find((p: any) => p.id === id);
           if (project && (role === 'admin' || project.userId === userId)) {
-            permanentlyDeleteProject(id);
+            await permanentlyDeleteProject(id);
           }
-        });
+        }
       }
       return NextResponse.json({ success: true });
     }
@@ -89,12 +92,13 @@ export async function PUT(request: Request) {
     const { projectIds } = body;
 
     if (projectIds && Array.isArray(projectIds)) {
-      projectIds.forEach((id: string) => {
-        const project = getAllProjectsIncludingDeleted().find((p: any) => p.id === id);
+      const allProjects = await getAllProjectsIncludingDeleted();
+      for (const id of projectIds) {
+        const project = allProjects.find((p: any) => p.id === id);
         if (project && (role === 'admin' || project.userId === userId)) {
-          softDeleteProject(id);
+          await softDeleteProject(id);
         }
-      });
+      }
       return NextResponse.json({ success: true });
     }
 

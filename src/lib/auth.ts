@@ -44,16 +44,17 @@ export const authOptions: NextAuthOptions = {
           throw new Error('密码至少8位，需包含大写字母、小写字母、数字、符号中至少两种');
         }
 
-        const user = getUserByUsername(credentials.username);
+        const user = await getUserByUsername(credentials.username);
         
         if (!user) {
           // 自动注册新用户
           const hashedPassword = await bcrypt.hash(credentials.password, 10);
-          const newUser = createUser(credentials.username, hashedPassword, 'user');
+          const newUser = await createUser(credentials.username, hashedPassword, 'user');
           return {
             id: newUser.id,
             name: newUser.username,
-            role: newUser.role
+            role: newUser.role,
+            username: newUser.username
           };
         }
 
@@ -66,7 +67,8 @@ export const authOptions: NextAuthOptions = {
         return {
           id: user.id,
           name: user.username,
-          role: user.role
+          role: user.role,
+          username: user.username
         };
       }
     })

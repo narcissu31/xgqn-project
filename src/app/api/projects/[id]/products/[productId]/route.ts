@@ -17,7 +17,7 @@ export async function DELETE(
   const { id, productId } = await params;
 
   try {
-    const project = getProjectById(id);
+    const project = await getProjectById(id);
     if (!project) {
       return NextResponse.json({ error: '项目不存在' }, { status: 404 });
     }
@@ -28,10 +28,10 @@ export async function DELETE(
     );
     
     // 更新项目
-    updateProject(id, { selectedProducts: newSelectedProducts });
+    await updateProject(id, { selectedProducts: newSelectedProducts });
     
     // 删除产品关联的材料
-    deleteProductMaterials(id, productId);
+    await deleteProductMaterials(id, productId);
     
     return NextResponse.json({ success: true });
   } catch (error) {

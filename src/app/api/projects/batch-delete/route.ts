@@ -19,12 +19,12 @@ export async function DELETE(request: Request) {
 
     // 批量删除
     if (projectIds && Array.isArray(projectIds)) {
-      projectIds.forEach((pid: string) => {
-        const project = getProjectById(pid);
+      for (const pid of projectIds) {
+        const project = await getProjectById(pid);
         if (project && (role === 'admin' || project.userId === userId)) {
-          deleteProjectWithFiles(pid);
+          await deleteProjectWithFiles(pid);
         }
-      });
+      }
       return NextResponse.json({ success: true });
     }
 
