@@ -2,6 +2,10 @@ name = "xgqn-project"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Cloudflare Pages 构建设置
+[build]
+command = "npx opennextjs-cloudflare build"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "xgqn-database"
