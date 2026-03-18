@@ -2,7 +2,8 @@ name = "xgqn-project"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Cloudflare Pages 设置
+# Cloudflare Pages 设置 - 只用于配置，不用于部署
+# 部署由 Cloudflare Pages 自动处理
 pages_build_output_dir = ".next"
 
 [[d1_databases]]

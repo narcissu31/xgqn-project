@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
+    "lint": "eslint"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
