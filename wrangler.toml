@@ -1,10 +1,10 @@
 name = "xgqn-project"
-compatibility_date = "2024-09-23"
-compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2024-12-01"
 
-[build]
-command = "npx @opennextjs/cloudflare build"
+# Next.js 静态导出模式
+pages_build_output_dir = ".next"
 
+# D1 数据库绑定
 [[d1_databases]]
 binding = "DB"
 database_name = "xgqn-database"
