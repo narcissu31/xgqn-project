@@ -144,9 +144,9 @@ export function createProject(data: { projectName: string; projectManager: strin
 
 export function getProjectsByUserId(userId: string) {
   const projects = readProjects();
-  return projects.filter((p: any) => p.userId === userId).sort((a: any, b: any) => 
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  return projects
+    .filter((p: any) => p.userId === userId && !p.deleted)
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export function getProjectById(id: string) {
@@ -170,6 +170,14 @@ export function updateProject(id: string, data: { projectName?: string; projectM
 }
 
 export function getAllProjects() {
+  const projects = readProjects();
+  return projects
+    .filter((p: any) => !p.deleted)
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+// 获取所有项目（包括已删除的，用于管理员查询）
+export function getAllProjectsIncludingDeleted() {
   const projects = readProjects();
   return projects.sort((a: any, b: any) => 
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -225,6 +233,7 @@ export function softDeleteProject(id: string) {
   const projects = readProjects();
   const index = projects.findIndex((p: any) => p.id === id);
   if (index !== -1) {
+    projects[index].deleted = true;
     projects[index].deletedAt = new Date().toISOString();
     projects[index].deletedBy = null;
     writeProjects(projects);
@@ -233,7 +242,7 @@ export function softDeleteProject(id: string) {
 
 export function getDeletedProjects() {
   const projects = readProjects();
-  return projects.filter((p: any) => p.deletedAt).sort((a: any, b: any) => 
+  return projects.filter((p: any) => p.deleted === true).sort((a: any, b: any) => 
     new Date(b.deletedAt).getTime() - new Date(a.deletedAt).getTime()
   );
 }
@@ -242,6 +251,7 @@ export function restoreProject(id: string) {
   const projects = readProjects();
   const index = projects.findIndex((p: any) => p.id === id);
   if (index !== -1) {
+    projects[index].deleted = false;
     delete projects[index].deletedAt;
     delete projects[index].deletedBy;
     writeProjects(projects);

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getDeletedProjects, restoreProject, permanentlyDeleteProject, softDeleteProject, getAllProjects } from '@/lib/db';
+import { getDeletedProjects, restoreProject, permanentlyDeleteProject, softDeleteProject, getAllProjectsIncludingDeleted } from '@/lib/db';
 
 // 获取回收站项目
 export async function GET() {
@@ -19,9 +19,8 @@ export async function GET() {
     
     // 非管理员只能看到自己删除的项目
     if (role !== 'admin') {
-      const allProjects = getAllProjects();
-      const userProjectIds = allProjects.filter((p: any) => p.userId === userId).map((p: any) => p.id);
-      projects = projects.filter((p: any) => userProjectIds.includes(p.id));
+      // 从已删除项目中筛选出用户自己的
+      projects = projects.filter((p: any) => p.userId === userId);
     }
     
     return NextResponse.json(projects);
@@ -91,7 +90,7 @@ export async function PUT(request: Request) {
 
     if (projectIds && Array.isArray(projectIds)) {
       projectIds.forEach((id: string) => {
-        const project = getAllProjects().find((p: any) => p.id === id);
+        const project = getAllProjectsIncludingDeleted().find((p: any) => p.id === id);
         if (project && (role === 'admin' || project.userId === userId)) {
           softDeleteProject(id);
         }

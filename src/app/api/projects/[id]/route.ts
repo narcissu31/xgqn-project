@@ -120,3 +120,35 @@ export async function DELETE(
     return NextResponse.json({ error: '删除失败' }, { status: 500 });
   }
 }
+
+// PATCH /api/projects/[id] - 软删除（移到回收站）
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user) {
+    return NextResponse.json({ error: '未登录' }, { status: 401 });
+  }
+
+  const userId = (session.user as any).id;
+  const { id } = await params;
+
+  try {
+    const project = getProjectById(id);
+    if (!project) {
+      return NextResponse.json({ error: '项目不存在' }, { status: 404 });
+    }
+
+    if (project.userId !== userId) {
+      return NextResponse.json({ error: '无权删除此项目' }, { status: 403 });
+    }
+
+    softDeleteProject(id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('软删除失败:', error);
+    return NextResponse.json({ error: '删除失败' }, { status: 500 });
+  }
+}
