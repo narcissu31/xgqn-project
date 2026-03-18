@@ -323,7 +323,7 @@ export default function AdminProjectDetail() {
                           )}
 
                           {/* 文件列表 */}
-                          {material?.files?.length > 0 && (
+                          {material && material.files && material.files.length > 0 && (
                             <div className="mt-3 space-y-1">
                               {material.files.map((file, fileIdx) => (
                                 <div key={fileIdx} className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
