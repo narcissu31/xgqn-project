@@ -1,94 +1,99 @@
 import { v4 as uuidv4 } from 'uuid';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
 
-// ==================== D1 数据库接口 ====================
+// 数据目录 - Cloudflare Workers 使用 /tmp 目录
+const DATA_DIR = process.env.CLOUDFLARE_WORKERS ? '/tmp/data' : join(process.cwd(), 'data');
+const USERS_FILE = join(DATA_DIR, 'users.json');
+const PROJECTS_FILE = join(DATA_DIR, 'projects.json');
+const MATERIALS_FILE = join(DATA_DIR, 'materials.json');
 
-declare global {
-  interface D1Database {
-    prepare(query: string): D1PreparedStatement;
-    exec(query: string): Promise<D1ExecResult>;
-  }
-  interface D1PreparedStatement {
-    bind(...values: any[]): D1PreparedStatement;
-    first<T = any>(): Promise<T | null>;
-    all<T = any>(): Promise<{ results: T[] }>;
-    run(): Promise<D1Result>;
-  }
-  interface D1Result {
-    success: boolean;
-    meta?: any;
-  }
-  interface D1ExecResult {
-    success: boolean;
-    meta?: any;
+// 确保数据目录存在
+function ensureDataDir() {
+  if (!existsSync(DATA_DIR)) {
+    mkdirSync(DATA_DIR, { recursive: true });
   }
 }
 
-function getDB(): D1Database {
+// 读取 JSON 文件
+function readJsonFile(filePath: string): any[] {
   try {
-    // Cloudflare Workers 环境：通过 getRequestContext 获取
-    const { getRequestContext } = require('@opennextjs/cloudflare');
-    const ctx = getRequestContext();
-    if (ctx?.env?.DB) return ctx.env.DB;
-  } catch {}
-
-  // 全局注入（中间件注入）
-  if ((globalThis as any).__D1_DB__) {
-    return (globalThis as any).__D1_DB__;
+    if (!existsSync(filePath)) return [];
+    const data = readFileSync(filePath, 'utf-8');
+    return JSON.parse(data);
+  } catch {
+    return [];
   }
+}
 
-  throw new Error('D1 数据库未初始化，请确认 Cloudflare Workers 环境配置');
+// 写入 JSON 文件
+function writeJsonFile(filePath: string, data: any[]) {
+  ensureDataDir();
+  writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
 // ==================== 用户操作 ====================
 
 export async function createUser(username: string, password: string, role: string = 'user') {
-  const db = getDB();
-  const existing = await db.prepare('SELECT id FROM users WHERE username = ?').bind(username).first();
-  if (existing) throw new Error('用户名已存在');
+  const users = readJsonFile(USERS_FILE);
+  if (users.find((u: any) => u.username === username && !u.deletedAt)) {
+    throw new Error('用户名已存在');
+  }
 
-  const id = uuidv4();
-  await db.prepare(
-    'INSERT INTO users (id, username, password, role) VALUES (?, ?, ?, ?)'
-  ).bind(id, username, password, role).run();
-
-  return { id, username, password, role, createdAt: new Date().toISOString() };
+  const user = {
+    id: uuidv4(),
+    username,
+    password,
+    role,
+    createdAt: new Date().toISOString()
+  };
+  users.push(user);
+  writeJsonFile(USERS_FILE, users);
+  return user;
 }
 
 export async function getUserByUsername(username: string) {
-  const db = getDB();
-  return await db.prepare('SELECT * FROM users WHERE username = ? AND deletedAt IS NULL').bind(username).first();
+  const users = readJsonFile(USERS_FILE);
+  return users.find((u: any) => u.username === username && !u.deletedAt) || null;
 }
 
 export async function getUserById(id: string) {
-  const db = getDB();
-  return await db.prepare('SELECT * FROM users WHERE id = ?').bind(id).first();
+  const users = readJsonFile(USERS_FILE);
+  return users.find((u: any) => u.id === id) || null;
 }
 
 export async function getAllUsers() {
-  const db = getDB();
-  const result = await db.prepare('SELECT * FROM users WHERE deletedAt IS NULL ORDER BY createdAt DESC').all();
-  return result.results;
+  const users = readJsonFile(USERS_FILE);
+  return users.filter((u: any) => !u.deletedAt);
 }
 
 export async function softDeleteUser(id: string) {
-  const db = getDB();
-  await db.prepare('UPDATE users SET deletedAt = ? WHERE id = ?').bind(new Date().toISOString(), id).run();
+  const users = readJsonFile(USERS_FILE);
+  const index = users.findIndex((u: any) => u.id === id);
+  if (index !== -1) {
+    users[index].deletedAt = new Date().toISOString();
+    writeJsonFile(USERS_FILE, users);
+  }
 }
 
 export async function getDeletedUsers() {
-  const db = getDB();
-  const result = await db.prepare('SELECT * FROM users WHERE deletedAt IS NOT NULL ORDER BY deletedAt DESC').all();
-  return result.results;
+  const users = readJsonFile(USERS_FILE);
+  return users.filter((u: any) => u.deletedAt);
 }
 
 export async function restoreUser(id: string) {
-  const db = getDB();
-  await db.prepare('UPDATE users SET deletedAt = NULL WHERE id = ?').bind(id).run();
+  const users = readJsonFile(USERS_FILE);
+  const index = users.findIndex((u: any) => u.id === id);
+  if (index !== -1) {
+    delete users[index].deletedAt;
+    writeJsonFile(USERS_FILE, users);
+  }
 }
 
 export async function deleteUser(id: string) {
-  const db = getDB();
-  await db.prepare('DELETE FROM users WHERE id = ?').bind(id).run();
+  const users = readJsonFile(USERS_FILE);
+  const filtered = users.filter((u: any) => u.id !== id);
+  writeJsonFile(USERS_FILE, filtered);
 }
 
 export async function permanentlyDeleteUser(id: string) {
@@ -96,92 +101,114 @@ export async function permanentlyDeleteUser(id: string) {
 }
 
 export async function resetUserPassword(id: string, newPassword: string) {
-  const db = getDB();
-  const bcrypt = require('bcryptjs');
-  const hashed = bcrypt.hashSync(newPassword, 10);
-  await db.prepare('UPDATE users SET password = ? WHERE id = ?').bind(hashed, id).run();
-  return true;
+  const users = readJsonFile(USERS_FILE);
+  const index = users.findIndex((u: any) => u.id === id);
+  if (index !== -1) {
+    const bcrypt = require('bcryptjs');
+    users[index].password = bcrypt.hashSync(newPassword, 10);
+    writeJsonFile(USERS_FILE, users);
+    return true;
+  }
+  return false;
 }
 
 // ==================== 项目操作 ====================
 
 export async function createProject(data: { projectName: string; projectManager: string; projectNumber: string; userId: string; template?: string }) {
-  const db = getDB();
-  const id = uuidv4();
-  const now = new Date().toISOString();
-  await db.prepare(
-    'INSERT INTO projects (id, projectName, projectManager, projectNumber, userId, template, selectedProducts, deleted, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)'
-  ).bind(id, data.projectName, data.projectManager, data.projectNumber, data.userId, data.template || 'general', '[]', now, now).run();
-
-  return { id, ...data, template: data.template || 'general', selectedProducts: [], deleted: false, createdAt: now, updatedAt: now };
+  const projects = readJsonFile(PROJECTS_FILE);
+  const project = {
+    id: uuidv4(),
+    projectName: data.projectName,
+    projectManager: data.projectManager,
+    projectNumber: data.projectNumber,
+    userId: data.userId,
+    template: data.template || 'general',
+    selectedProducts: [],
+    deleted: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  projects.push(project);
+  writeJsonFile(PROJECTS_FILE, projects);
+  return project;
 }
 
 export async function getProjectsByUserId(userId: string) {
-  const db = getDB();
-  const result = await db.prepare(
-    'SELECT * FROM projects WHERE userId = ? AND deleted = 0 ORDER BY createdAt DESC'
-  ).bind(userId).all();
-  return result.results.map(parseProject);
+  const projects = readJsonFile(PROJECTS_FILE);
+  return projects
+    .filter((p: any) => p.userId === userId && !p.deleted)
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function getProjectById(id: string) {
-  const db = getDB();
-  const row = await db.prepare('SELECT * FROM projects WHERE id = ?').bind(id).first();
-  return row ? parseProject(row) : null;
+  const projects = readJsonFile(PROJECTS_FILE);
+  return projects.find((p: any) => p.id === id) || null;
 }
 
 export async function updateProject(id: string, data: { projectName?: string; projectManager?: string; projectNumber?: string; selectedProducts?: string[] }) {
-  const db = getDB();
-  const now = new Date().toISOString();
-  const sets: string[] = ['updatedAt = ?'];
-  const values: any[] = [now];
-
-  if (data.projectName) { sets.push('projectName = ?'); values.push(data.projectName); }
-  if (data.projectManager) { sets.push('projectManager = ?'); values.push(data.projectManager); }
-  if (data.projectNumber) { sets.push('projectNumber = ?'); values.push(data.projectNumber); }
-  if (data.selectedProducts) { sets.push('selectedProducts = ?'); values.push(JSON.stringify(data.selectedProducts)); }
-
-  values.push(id);
-  await db.prepare(`UPDATE projects SET ${sets.join(', ')} WHERE id = ?`).bind(...values).run();
-  return await getProjectById(id);
+  const projects = readJsonFile(PROJECTS_FILE);
+  const index = projects.findIndex((p: any) => p.id === id);
+  if (index !== -1) {
+    if (data.projectName) projects[index].projectName = data.projectName;
+    if (data.projectManager) projects[index].projectManager = data.projectManager;
+    if (data.projectNumber) projects[index].projectNumber = data.projectNumber;
+    if (data.selectedProducts) projects[index].selectedProducts = data.selectedProducts;
+    projects[index].updatedAt = new Date().toISOString();
+    writeJsonFile(PROJECTS_FILE, projects);
+    return projects[index];
+  }
+  return null;
 }
 
 export async function getAllProjects() {
-  const db = getDB();
-  const result = await db.prepare('SELECT * FROM projects WHERE deleted = 0 ORDER BY createdAt DESC').all();
-  return result.results.map(parseProject);
+  const projects = readJsonFile(PROJECTS_FILE);
+  return projects
+    .filter((p: any) => !p.deleted)
+    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function getAllProjectsIncludingDeleted() {
-  const db = getDB();
-  const result = await db.prepare('SELECT * FROM projects ORDER BY createdAt DESC').all();
-  return result.results.map(parseProject);
+  const projects = readJsonFile(PROJECTS_FILE);
+  return projects.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export async function softDeleteProject(id: string) {
-  const db = getDB();
-  await db.prepare('UPDATE projects SET deleted = 1, deletedAt = ? WHERE id = ?').bind(new Date().toISOString(), id).run();
+  const projects = readJsonFile(PROJECTS_FILE);
+  const index = projects.findIndex((p: any) => p.id === id);
+  if (index !== -1) {
+    projects[index].deleted = true;
+    projects[index].deletedAt = new Date().toISOString();
+    writeJsonFile(PROJECTS_FILE, projects);
+  }
 }
 
 export async function getDeletedProjects() {
-  const db = getDB();
-  const result = await db.prepare('SELECT * FROM projects WHERE deleted = 1 ORDER BY deletedAt DESC').all();
-  return result.results.map(parseProject);
+  const projects = readJsonFile(PROJECTS_FILE);
+  return projects
+    .filter((p: any) => p.deleted)
+    .sort((a: any, b: any) => new Date(b.deletedAt).getTime() - new Date(a.deletedAt).getTime());
 }
 
 export async function restoreProject(id: string) {
-  const db = getDB();
-  await db.prepare('UPDATE projects SET deleted = 0, deletedAt = NULL WHERE id = ?').bind(id).run();
+  const projects = readJsonFile(PROJECTS_FILE);
+  const index = projects.findIndex((p: any) => p.id === id);
+  if (index !== -1) {
+    projects[index].deleted = false;
+    delete projects[index].deletedAt;
+    writeJsonFile(PROJECTS_FILE, projects);
+  }
 }
 
 export async function deleteProject(id: string) {
-  const db = getDB();
-  await db.prepare('DELETE FROM projects WHERE id = ?').bind(id).run();
+  const projects = readJsonFile(PROJECTS_FILE);
+  const filtered = projects.filter((p: any) => p.id !== id);
+  writeJsonFile(PROJECTS_FILE, filtered);
 }
 
 export async function deleteProjectWithFiles(projectId: string) {
-  const db = getDB();
-  await db.prepare('DELETE FROM materials WHERE projectId = ?').bind(projectId).run();
+  const materials = readJsonFile(MATERIALS_FILE);
+  const filteredMaterials = materials.filter((m: any) => m.projectId !== projectId);
+  writeJsonFile(MATERIALS_FILE, filteredMaterials);
   await deleteProject(projectId);
 }
 
@@ -191,23 +218,6 @@ export async function permanentlyDeleteProject(id: string) {
 
 // ==================== 材料操作 ====================
 
-function parseProject(row: any) {
-  return {
-    ...row,
-    deleted: row.deleted === 1,
-    selectedProducts: (() => { try { return JSON.parse(row.selectedProducts || '[]'); } catch { return []; } })()
-  };
-}
-
-function parseMaterial(row: any) {
-  return {
-    ...row,
-    isProjectMaterial: row.isProjectMaterial === 1,
-    images: (() => { try { return JSON.parse(row.images || '[]'); } catch { return []; } })(),
-    files: (() => { try { return JSON.parse(row.files || '[]'); } catch { return []; } })()
-  };
-}
-
 export async function createMaterial(data: {
   projectId: string;
   materialName: string;
@@ -215,49 +225,50 @@ export async function createMaterial(data: {
   productionLineId?: string;
   isProjectMaterial?: boolean;
 }) {
-  const db = getDB();
-  const id = uuidv4();
-  const now = new Date().toISOString();
-  await db.prepare(
-    'INSERT INTO materials (id, projectId, materialName, materialGroup, isProjectMaterial, images, files, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-  ).bind(id, data.projectId, data.materialName, data.materialGroup, data.isProjectMaterial ? 1 : 0, '[]', '[]', now, now).run();
-
-  return { id, ...data, isProjectMaterial: data.isProjectMaterial || false, images: [], files: [], createdAt: now, updatedAt: now };
+  const materials = readJsonFile(MATERIALS_FILE);
+  const material = {
+    id: uuidv4(),
+    projectId: data.projectId,
+    materialName: data.materialName,
+    materialGroup: data.materialGroup,
+    isProjectMaterial: data.isProjectMaterial || false,
+    images: [],
+    files: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  materials.push(material);
+  writeJsonFile(MATERIALS_FILE, materials);
+  return material;
 }
 
 export async function getMaterialsByProjectId(projectId: string) {
-  const db = getDB();
-  const result = await db.prepare('SELECT * FROM materials WHERE projectId = ?').bind(projectId).all();
-  return result.results.map(parseMaterial);
+  const materials = readJsonFile(MATERIALS_FILE);
+  return materials.filter((m: any) => m.projectId === projectId);
 }
 
 export async function getMaterialById(id: string) {
-  const db = getDB();
-  const row = await db.prepare('SELECT * FROM materials WHERE id = ?').bind(id).first();
-  return row ? parseMaterial(row) : null;
+  const materials = readJsonFile(MATERIALS_FILE);
+  return materials.find((m: any) => m.id === id) || null;
 }
 
 export async function updateMaterial(id: string, data: { images?: string[]; files?: string[] }) {
-  const db = getDB();
-  const now = new Date().toISOString();
-  const sets: string[] = ['updatedAt = ?'];
-  const values: any[] = [now];
-
-  if (data.images !== undefined) { sets.push('images = ?'); values.push(JSON.stringify(data.images)); }
-  if (data.files !== undefined) { sets.push('files = ?'); values.push(JSON.stringify(data.files)); }
-
-  values.push(id);
-  await db.prepare(`UPDATE materials SET ${sets.join(', ')} WHERE id = ?`).bind(...values).run();
-  return await getMaterialById(id);
+  const materials = readJsonFile(MATERIALS_FILE);
+  const index = materials.findIndex((m: any) => m.id === id);
+  if (index !== -1) {
+    if (data.images !== undefined) materials[index].images = data.images;
+    if (data.files !== undefined) materials[index].files = data.files;
+    materials[index].updatedAt = new Date().toISOString();
+    writeJsonFile(MATERIALS_FILE, materials);
+    return materials[index];
+  }
+  return null;
 }
 
 export async function getOrCreateMaterial(projectId: string, materialName: string, materialGroup: string, productionLineId?: string, isProjectMaterial?: boolean) {
-  const db = getDB();
-  const existing = await db.prepare(
-    'SELECT * FROM materials WHERE projectId = ? AND materialName = ? AND materialGroup = ?'
-  ).bind(projectId, materialName, materialGroup).first();
-
-  if (existing) return parseMaterial(existing);
+  const materials = readJsonFile(MATERIALS_FILE);
+  const existing = materials.find((m: any) => m.projectId === projectId && m.materialName === materialName && m.materialGroup === materialGroup);
+  if (existing) return existing;
   return await createMaterial({ projectId, materialName, materialGroup, productionLineId, isProjectMaterial });
 }
 
@@ -274,6 +285,7 @@ export async function batchCreateProjectMaterials(projectId: string, materials: 
 }
 
 export async function deleteProductMaterials(projectId: string, productId: string) {
-  const db = getDB();
-  await db.prepare('DELETE FROM materials WHERE projectId = ? AND materialGroup = ?').bind(projectId, productId).run();
+  const materials = readJsonFile(MATERIALS_FILE);
+  const filtered = materials.filter((m: any) => !(m.projectId === projectId && m.materialGroup === productId));
+  writeJsonFile(MATERIALS_FILE, filtered);
 }
