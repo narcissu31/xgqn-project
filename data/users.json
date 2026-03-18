@@ -1,0 +1,16 @@
+[
+  {
+    "id": "01154fbf-43e5-4511-80b7-4ad2710e9c92",
+    "username": "mjzhang10",
+    "password": "$2b$10$/3tlTmFf4TAOuBZmaI.7zOu.KHM09Pr6pRVZ7QyYaaQGKtUj0CDc.",
+    "role": "user",
+    "createdAt": "2026-03-17T18:37:46.464Z"
+  },
+  {
+    "id": "05cdc7da-0c92-4947-9fe5-577a906100b2",
+    "username": "rootadmin",
+    "password": "$2b$10$Qstas9s4hecmZmCmRk/EOeBz/qXz7oJ5qABonUhgU2.I01E.PiDcW",
+    "role": "admin",
+    "createdAt": "2026-03-17T19:21:00.284Z"
+  }
+]

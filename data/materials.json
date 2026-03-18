@@ -1,0 +1,479 @@
+[
+  {
+    "id": "b1412e18-a82b-4819-9f25-4ca94f4cbbe3",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "所有产品培训三单",
+    "materialGroup": "项目材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.127Z",
+    "updatedAt": "2026-03-17T20:33:30.127Z"
+  },
+  {
+    "id": "1054c1db-de59-45c7-a01e-8d77d3e554d3",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "货物签收单",
+    "materialGroup": "项目材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.128Z",
+    "updatedAt": "2026-03-17T20:33:30.128Z"
+  },
+  {
+    "id": "e0038bb5-12a1-46f2-a3a3-9c174d03659a",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "项目验收单",
+    "materialGroup": "项目材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.128Z",
+    "updatedAt": "2026-03-17T20:33:30.128Z"
+  },
+  {
+    "id": "c9b4d318-4e61-411d-bc70-d620663d49cc",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "各产品硬件部署位置收集表",
+    "materialGroup": "硬件部署材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.128Z",
+    "updatedAt": "2026-03-17T20:33:30.128Z"
+  },
+  {
+    "id": "366e9000-057a-4d9f-82d6-a1205e49904b",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "智慧窗部署照片",
+    "materialGroup": "硬件部署材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.128Z",
+    "updatedAt": "2026-03-17T20:33:30.128Z"
+  },
+  {
+    "id": "462123b7-8e9c-451c-b410-ce3746d36884",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "充电车布线照片",
+    "materialGroup": "硬件部署材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.128Z",
+    "updatedAt": "2026-03-17T20:33:30.128Z"
+  },
+  {
+    "id": "c3585051-d84c-41d9-b05f-86b846c745aa",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "充电车标签照片",
+    "materialGroup": "硬件部署材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.128Z",
+    "updatedAt": "2026-03-17T20:33:30.128Z"
+  },
+  {
+    "id": "d06b938f-de59-4fd2-bbf9-7ff6a37d0b98",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "超脑上墙照片",
+    "materialGroup": "硬件部署材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.128Z",
+    "updatedAt": "2026-03-17T20:33:30.128Z"
+  },
+  {
+    "id": "7644ea79-86ac-4813-a058-72737561113d",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "超脑开机联网照片",
+    "materialGroup": "硬件部署材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.128Z",
+    "updatedAt": "2026-03-17T20:33:30.128Z"
+  },
+  {
+    "id": "8425c0a1-0d8c-40ec-93c7-73407dc52873",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "练字笔部署到位照片",
+    "materialGroup": "硬件部署材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.129Z",
+    "updatedAt": "2026-03-17T20:33:30.129Z"
+  },
+  {
+    "id": "32070543-3730-46a3-88db-e007dcee4db0",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "平板部署到位放充电车照片",
+    "materialGroup": "硬件部署材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.129Z",
+    "updatedAt": "2026-03-17T20:33:30.129Z"
+  },
+  {
+    "id": "7419e0fc-3d15-4530-a0c7-c12108a6b3c2",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "耳机标签照片",
+    "materialGroup": "硬件部署材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.129Z",
+    "updatedAt": "2026-03-17T20:33:30.129Z"
+  },
+  {
+    "id": "fce9ea84-63da-41d7-9f39-40168cbdaad0",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "智慧窗培训照片",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.129Z",
+    "updatedAt": "2026-03-17T20:33:30.129Z"
+  },
+  {
+    "id": "7a21e8a2-9907-44eb-89fb-430034623ad2",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "中台管理员培训照片",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.129Z",
+    "updatedAt": "2026-03-17T20:33:30.129Z"
+  },
+  {
+    "id": "224bb019-5ed6-4484-8dcd-ffd07ad2efde",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "专题课堂培训照片",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.130Z",
+    "updatedAt": "2026-03-17T20:33:30.130Z"
+  },
+  {
+    "id": "1fdcea40-e1c4-4ae8-962c-bbceccbcc0b0",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "练字笔培训照片",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.130Z",
+    "updatedAt": "2026-03-17T20:33:30.130Z"
+  },
+  {
+    "id": "20351b92-5958-47c6-852b-edb3c0675c8e",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "AI听说课堂照片",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.130Z",
+    "updatedAt": "2026-03-17T20:33:30.130Z"
+  },
+  {
+    "id": "cec780f3-1463-401e-aef9-6b8705852ac9",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "轻智课培训照片",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.130Z",
+    "updatedAt": "2026-03-17T20:33:30.130Z"
+  },
+  {
+    "id": "62d252c0-8d29-42de-9acc-84dea01d3eb7",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "大精培训照片",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.130Z",
+    "updatedAt": "2026-03-17T20:33:30.130Z"
+  },
+  {
+    "id": "571a9370-4e75-4424-af04-ea40dfc38981",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "批阅机培训照片",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.130Z",
+    "updatedAt": "2026-03-17T20:33:30.130Z"
+  },
+  {
+    "id": "7f33a8eb-ddb7-4eb7-8093-4f06c2551388",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "星火教师助手培训照片",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.130Z",
+    "updatedAt": "2026-03-17T20:33:30.130Z"
+  },
+  {
+    "id": "992e91e9-3d5a-4041-8c8e-45d5792b6f85",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "美丽科学培训照片",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.130Z",
+    "updatedAt": "2026-03-17T20:33:30.130Z"
+  },
+  {
+    "id": "f3d7d7c9-d807-49cf-9cd9-4b32f6e05e2a",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "服务运营（培训）方案",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.131Z",
+    "updatedAt": "2026-03-17T20:33:30.131Z"
+  },
+  {
+    "id": "514f2629-e7c4-44bf-881a-9d3b5e32638d",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "培训总结",
+    "materialGroup": "培训材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.131Z",
+    "updatedAt": "2026-03-17T20:33:30.131Z"
+  },
+  {
+    "id": "84ba3a83-9399-4e82-bda8-6336144242e2",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "所有硬件合格证1份",
+    "materialGroup": "验收材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.131Z",
+    "updatedAt": "2026-03-17T20:33:30.131Z"
+  },
+  {
+    "id": "ba6f27da-a72d-4084-bd1b-26d7abb64995",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "所有硬件保修卡1份",
+    "materialGroup": "验收材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.131Z",
+    "updatedAt": "2026-03-17T20:33:30.131Z"
+  },
+  {
+    "id": "d02e1ffc-226b-410c-b723-91b4a3bb0e20",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "软装完成照片",
+    "materialGroup": "验收材料",
+    "images": [],
+    "createdAt": "2026-03-17T20:33:30.131Z",
+    "updatedAt": "2026-03-17T20:33:30.131Z"
+  },
+  {
+    "id": "2e5dfdfb-e2d2-44b7-bae4-145b2f1fc839",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "服务运营（培训）方案",
+    "materialGroup": "project",
+    "productionLineId": null,
+    "isProjectMaterial": true,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T12:50:12.415Z",
+    "updatedAt": "2026-03-18T12:50:12.415Z"
+  },
+  {
+    "id": "8aefe6b6-4a43-4d41-a077-405bed86da0a",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "培训总结",
+    "materialGroup": "project",
+    "productionLineId": null,
+    "isProjectMaterial": true,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T12:50:12.415Z",
+    "updatedAt": "2026-03-18T12:50:12.415Z"
+  },
+  {
+    "id": "dfc067b9-2edb-49e0-9676-b6b717db68e5",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "到货签收单",
+    "materialGroup": "project",
+    "productionLineId": null,
+    "isProjectMaterial": true,
+    "images": [
+      "/uploads/1773838820929-r9jrt8.png"
+    ],
+    "files": [],
+    "createdAt": "2026-03-18T12:50:12.415Z",
+    "updatedAt": "2026-03-18T13:00:20.933Z"
+  },
+  {
+    "id": "705bb6d0-f0ff-49b3-85d2-c320adc34651",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "项目验收单",
+    "materialGroup": "project",
+    "productionLineId": null,
+    "isProjectMaterial": true,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T12:50:12.415Z",
+    "updatedAt": "2026-03-18T12:50:12.415Z"
+  },
+  {
+    "id": "d4b9e6aa-2f8b-48cf-8e73-c284ca12ac4f",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "硬件部署位置表",
+    "materialGroup": "project",
+    "productionLineId": null,
+    "isProjectMaterial": true,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T12:50:12.416Z",
+    "updatedAt": "2026-03-18T12:50:12.416Z"
+  },
+  {
+    "id": "58007bb3-3f65-4eae-8d98-10b4f00f3dd8",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "合格证",
+    "materialGroup": "project",
+    "productionLineId": null,
+    "isProjectMaterial": true,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T12:50:12.416Z",
+    "updatedAt": "2026-03-18T12:50:12.416Z"
+  },
+  {
+    "id": "e848cada-6e2a-4c5a-b14b-a3d512c6cedd",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "软装完成照片",
+    "materialGroup": "project",
+    "productionLineId": null,
+    "isProjectMaterial": true,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T12:50:12.416Z",
+    "updatedAt": "2026-03-18T12:50:12.416Z"
+  },
+  {
+    "id": "159f2d29-1682-4c12-84b5-a6f71f149ef1",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "培训签到表",
+    "materialGroup": "qzk",
+    "productionLineId": "dakt",
+    "isProjectMaterial": false,
+    "images": [
+      "/uploads/1773839916922-oh6ic.png"
+    ],
+    "files": [
+      "/uploads/1773839973911-dyu9j.xlsx"
+    ],
+    "createdAt": "2026-03-18T13:18:22.868Z",
+    "updatedAt": "2026-03-18T13:19:33.912Z"
+  },
+  {
+    "id": "fcf93452-ad34-4852-8e81-6dc5089e1543",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "培训效果反馈表",
+    "materialGroup": "qzk",
+    "productionLineId": "dakt",
+    "isProjectMaterial": false,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T13:18:22.869Z",
+    "updatedAt": "2026-03-18T13:18:22.869Z"
+  },
+  {
+    "id": "cc079b74-f9b0-406e-ba9a-88bdd31ec58f",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "培训确认单",
+    "materialGroup": "qzk",
+    "productionLineId": "dakt",
+    "isProjectMaterial": false,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T13:18:22.869Z",
+    "updatedAt": "2026-03-18T13:18:22.869Z"
+  },
+  {
+    "id": "942722b8-bdb0-4644-9cae-37c8d089d0c4",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "软件、账号验证",
+    "materialGroup": "qzk",
+    "productionLineId": "dakt",
+    "isProjectMaterial": false,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T13:18:22.870Z",
+    "updatedAt": "2026-03-18T13:18:22.870Z"
+  },
+  {
+    "id": "c52b358c-43c6-4b27-aadb-6bb8d6d5a0fe",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "培训照片（教师）",
+    "materialGroup": "qzk",
+    "productionLineId": "dakt",
+    "isProjectMaterial": false,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T13:18:22.870Z",
+    "updatedAt": "2026-03-18T13:18:22.870Z"
+  },
+  {
+    "id": "4c590da5-2312-40cb-8ebf-a31e4362678a",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "培训签到表",
+    "materialGroup": "dsjjd",
+    "productionLineId": "dxq",
+    "isProjectMaterial": false,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T13:18:30.199Z",
+    "updatedAt": "2026-03-18T13:18:30.199Z"
+  },
+  {
+    "id": "a86053ee-f7ef-48a8-9e0a-3f5e85123367",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "培训效果反馈表",
+    "materialGroup": "dsjjd",
+    "productionLineId": "dxq",
+    "isProjectMaterial": false,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T13:18:30.199Z",
+    "updatedAt": "2026-03-18T13:18:30.199Z"
+  },
+  {
+    "id": "85468e76-5c29-4bba-8c17-92e3f7a49c4e",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "培训确认单",
+    "materialGroup": "dsjjd",
+    "productionLineId": "dxq",
+    "isProjectMaterial": false,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T13:18:30.200Z",
+    "updatedAt": "2026-03-18T13:18:30.200Z"
+  },
+  {
+    "id": "82238c66-b551-401a-a036-51ee2ce6ecf8",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "软件、账号验证",
+    "materialGroup": "dsjjd",
+    "productionLineId": "dxq",
+    "isProjectMaterial": false,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T13:18:30.200Z",
+    "updatedAt": "2026-03-18T13:18:30.200Z"
+  },
+  {
+    "id": "e5bb47d3-4c6a-4f66-9d61-3df21434af65",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "培训照片（管理员）",
+    "materialGroup": "dsjjd",
+    "productionLineId": "dxq",
+    "isProjectMaterial": false,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T13:18:30.200Z",
+    "updatedAt": "2026-03-18T13:18:30.200Z"
+  },
+  {
+    "id": "c9d02f46-75c7-4da2-81a4-bf67622f82ae",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "培训照片（全体教师）",
+    "materialGroup": "dsjjd",
+    "productionLineId": "dxq",
+    "isProjectMaterial": false,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T13:18:30.201Z",
+    "updatedAt": "2026-03-18T13:18:30.201Z"
+  },
+  {
+    "id": "5ee35bee-4475-4721-b4b3-c34b861c9d0b",
+    "projectId": "5663d196-759d-4b91-8534-b0e12cfa3813",
+    "materialName": "扫描仪部署、驱动、扫描软件安装",
+    "materialGroup": "dsjjd",
+    "productionLineId": "dxq",
+    "isProjectMaterial": false,
+    "images": [],
+    "files": [],
+    "createdAt": "2026-03-18T13:18:30.201Z",
+    "updatedAt": "2026-03-18T13:18:30.201Z"
+  }
+]
