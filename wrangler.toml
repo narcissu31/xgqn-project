@@ -1,0 +1,8 @@
+name = "xgqn-project"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "xgqn-database"
+database_id = "be9dac82-904f-459a-8b23-69bc613c8aa1"

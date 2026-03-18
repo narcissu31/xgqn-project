@@ -1,402 +1,258 @@
 import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs';
-import path from 'path';
 
-const DB_PATH = path.join(process.cwd(), 'data');
-const USERS_FILE = path.join(DB_PATH, 'users.json');
-const PROJECTS_FILE = path.join(DB_PATH, 'projects.json');
-const MATERIALS_FILE = path.join(DB_PATH, 'materials.json');
+// ==================== D1 数据库接口 ====================
 
-// 确保数据目录存在
-if (!fs.existsSync(DB_PATH)) {
-  fs.mkdirSync(DB_PATH, { recursive: true });
-}
+function getDB(): D1Database {
+  try {
+    // Cloudflare Workers 环境：通过 getRequestContext 获取
+    const { getRequestContext } = require('@opennextjs/cloudflare');
+    const ctx = getRequestContext();
+    if (ctx?.env?.DB) return ctx.env.DB;
+  } catch {}
 
-// 初始化空数据库
-if (!fs.existsSync(USERS_FILE)) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify([]));
-}
-if (!fs.existsSync(PROJECTS_FILE)) {
-  fs.writeFileSync(PROJECTS_FILE, JSON.stringify([]));
-}
-if (!fs.existsSync(MATERIALS_FILE)) {
-  fs.writeFileSync(MATERIALS_FILE, JSON.stringify([]));
-}
+  // 全局注入（中间件注入）
+  if ((globalThis as any).__D1_DB__) {
+    return (globalThis as any).__D1_DB__;
+  }
 
-// 读取数据
-function readUsers() {
-  return JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
-}
-
-function readProjects() {
-  return JSON.parse(fs.readFileSync(PROJECTS_FILE, 'utf-8'));
-}
-
-function readMaterials() {
-  return JSON.parse(fs.readFileSync(MATERIALS_FILE, 'utf-8'));
-}
-
-// 写入数据
-function writeUsers(users: any[]) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-}
-
-function writeProjects(projects: any[]) {
-  fs.writeFileSync(PROJECTS_FILE, JSON.stringify(projects, null, 2));
-}
-
-function writeMaterials(materials: any[]) {
-  fs.writeFileSync(MATERIALS_FILE, JSON.stringify(materials, null, 2));
+  throw new Error('D1 数据库未初始化，请确认 Cloudflare Workers 环境配置');
 }
 
 // ==================== 用户操作 ====================
 
-export function createUser(username: string, password: string, role: string = 'user') {
-  const users = readUsers();
-  const existing = users.find((u: any) => u.username === username);
+export async function createUser(username: string, password: string, role: string = 'user') {
+  const db = getDB();
+  const existing = await db.prepare('SELECT id FROM users WHERE username = ?').bind(username).first();
   if (existing) throw new Error('用户名已存在');
-  
-  const user = { id: uuidv4(), username, password, role, createdAt: new Date().toISOString() };
-  users.push(user);
-  writeUsers(users);
-  return user;
+
+  const id = uuidv4();
+  await db.prepare(
+    'INSERT INTO users (id, username, password, role) VALUES (?, ?, ?, ?)'
+  ).bind(id, username, password, role).run();
+
+  return { id, username, password, role, createdAt: new Date().toISOString() };
 }
 
-export function getUserByUsername(username: string) {
-  const users = readUsers();
-  return users.find((u: any) => u.username === username);
+export async function getUserByUsername(username: string) {
+  const db = getDB();
+  return await db.prepare('SELECT * FROM users WHERE username = ? AND deletedAt IS NULL').bind(username).first();
 }
 
-export function getUserById(id: string) {
-  const users = readUsers();
-  return users.find((u: any) => u.id === id);
+export async function getUserById(id: string) {
+  const db = getDB();
+  return await db.prepare('SELECT * FROM users WHERE id = ?').bind(id).first();
 }
 
-export function getAllUsers() {
-  return readUsers();
+export async function getAllUsers() {
+  const db = getDB();
+  const result = await db.prepare('SELECT * FROM users WHERE deletedAt IS NULL ORDER BY createdAt DESC').all();
+  return result.results;
 }
 
-export function softDeleteUser(id: string) {
-  const users = readUsers();
-  const index = users.findIndex((u: any) => u.id === id);
-  if (index !== -1) {
-    users[index].deletedAt = new Date().toISOString();
-    writeUsers(users);
-  }
+export async function softDeleteUser(id: string) {
+  const db = getDB();
+  await db.prepare('UPDATE users SET deletedAt = ? WHERE id = ?').bind(new Date().toISOString(), id).run();
 }
 
-export function getDeletedUsers() {
-  const users = readUsers();
-  return users.filter((u: any) => u.deletedAt);
+export async function getDeletedUsers() {
+  const db = getDB();
+  const result = await db.prepare('SELECT * FROM users WHERE deletedAt IS NOT NULL ORDER BY deletedAt DESC').all();
+  return result.results;
 }
 
-export function restoreUser(id: string) {
-  const users = readUsers();
-  const index = users.findIndex((u: any) => u.id === id);
-  if (index !== -1) {
-    delete users[index].deletedAt;
-    writeUsers(users);
-  }
+export async function restoreUser(id: string) {
+  const db = getDB();
+  await db.prepare('UPDATE users SET deletedAt = NULL WHERE id = ?').bind(id).run();
 }
 
-export function deleteUser(id: string) {
-  const users = readUsers();
-  const filtered = users.filter((u: any) => u.id !== id);
-  writeUsers(filtered);
+export async function deleteUser(id: string) {
+  const db = getDB();
+  await db.prepare('DELETE FROM users WHERE id = ?').bind(id).run();
 }
 
-export function permanentlyDeleteUser(id: string) {
-  deleteUser(id);
+export async function permanentlyDeleteUser(id: string) {
+  await deleteUser(id);
 }
 
-export function resetUserPassword(id: string, newPassword: string) {
-  const users = readUsers();
-  const index = users.findIndex((u: any) => u.id === id);
-  if (index !== -1) {
-    const bcrypt = require('bcryptjs');
-    users[index].password = bcrypt.hashSync(newPassword, 10);
-    writeUsers(users);
-    return true;
-  }
-  return false;
+export async function resetUserPassword(id: string, newPassword: string) {
+  const db = getDB();
+  const bcrypt = require('bcryptjs');
+  const hashed = bcrypt.hashSync(newPassword, 10);
+  await db.prepare('UPDATE users SET password = ? WHERE id = ?').bind(hashed, id).run();
+  return true;
 }
 
 // ==================== 项目操作 ====================
 
-export function createProject(data: { projectName: string; projectManager: string; projectNumber: string; userId: string; template?: string }) {
-  const projects = readProjects();
-  const project = {
-    id: uuidv4(),
-    projectName: data.projectName,
-    projectManager: data.projectManager,
-    projectNumber: data.projectNumber,
-    userId: data.userId,
-    template: data.template || 'general',
-    // 新增：项目已选择的产品（产线ID和产品ID列表）
-    selectedProducts: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  projects.push(project);
-  writeProjects(projects);
-  return project;
+export async function createProject(data: { projectName: string; projectManager: string; projectNumber: string; userId: string; template?: string }) {
+  const db = getDB();
+  const id = uuidv4();
+  const now = new Date().toISOString();
+  await db.prepare(
+    'INSERT INTO projects (id, projectName, projectManager, projectNumber, userId, template, selectedProducts, deleted, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?)'
+  ).bind(id, data.projectName, data.projectManager, data.projectNumber, data.userId, data.template || 'general', '[]', now, now).run();
+
+  return { id, ...data, template: data.template || 'general', selectedProducts: [], deleted: false, createdAt: now, updatedAt: now };
 }
 
-export function getProjectsByUserId(userId: string) {
-  const projects = readProjects();
-  return projects
-    .filter((p: any) => p.userId === userId && !p.deleted)
-    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+export async function getProjectsByUserId(userId: string) {
+  const db = getDB();
+  const result = await db.prepare(
+    'SELECT * FROM projects WHERE userId = ? AND deleted = 0 ORDER BY createdAt DESC'
+  ).bind(userId).all();
+  return result.results.map(parseProject);
 }
 
-export function getProjectById(id: string) {
-  const projects = readProjects();
-  return projects.find((p: any) => p.id === id);
+export async function getProjectById(id: string) {
+  const db = getDB();
+  const row = await db.prepare('SELECT * FROM projects WHERE id = ?').bind(id).first();
+  return row ? parseProject(row) : null;
 }
 
-export function updateProject(id: string, data: { projectName?: string; projectManager?: string; projectNumber?: string; selectedProducts?: string[] }) {
-  const projects = readProjects();
-  const index = projects.findIndex((p: any) => p.id === id);
-  if (index !== -1) {
-    if (data.projectName) projects[index].projectName = data.projectName;
-    if (data.projectManager) projects[index].projectManager = data.projectManager;
-    if (data.projectNumber) projects[index].projectNumber = data.projectNumber;
-    if (data.selectedProducts) projects[index].selectedProducts = data.selectedProducts;
-    projects[index].updatedAt = new Date().toISOString();
-    writeProjects(projects);
-    return projects[index];
-  }
-  return null;
+export async function updateProject(id: string, data: { projectName?: string; projectManager?: string; projectNumber?: string; selectedProducts?: string[] }) {
+  const db = getDB();
+  const now = new Date().toISOString();
+  const sets: string[] = ['updatedAt = ?'];
+  const values: any[] = [now];
+
+  if (data.projectName) { sets.push('projectName = ?'); values.push(data.projectName); }
+  if (data.projectManager) { sets.push('projectManager = ?'); values.push(data.projectManager); }
+  if (data.projectNumber) { sets.push('projectNumber = ?'); values.push(data.projectNumber); }
+  if (data.selectedProducts) { sets.push('selectedProducts = ?'); values.push(JSON.stringify(data.selectedProducts)); }
+
+  values.push(id);
+  await db.prepare(`UPDATE projects SET ${sets.join(', ')} WHERE id = ?`).bind(...values).run();
+  return await getProjectById(id);
 }
 
-export function getAllProjects() {
-  const projects = readProjects();
-  return projects
-    .filter((p: any) => !p.deleted)
-    .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+export async function getAllProjects() {
+  const db = getDB();
+  const result = await db.prepare('SELECT * FROM projects WHERE deleted = 0 ORDER BY createdAt DESC').all();
+  return result.results.map(parseProject);
 }
 
-// 获取所有项目（包括已删除的，用于管理员查询）
-export function getAllProjectsIncludingDeleted() {
-  const projects = readProjects();
-  return projects.sort((a: any, b: any) => 
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+export async function getAllProjectsIncludingDeleted() {
+  const db = getDB();
+  const result = await db.prepare('SELECT * FROM projects ORDER BY createdAt DESC').all();
+  return result.results.map(parseProject);
 }
 
-export function deleteProject(id: string) {
-  const projects = readProjects();
-  const filtered = projects.filter((p: any) => p.id !== id);
-  writeProjects(filtered);
+export async function softDeleteProject(id: string) {
+  const db = getDB();
+  await db.prepare('UPDATE projects SET deleted = 1, deletedAt = ? WHERE id = ?').bind(new Date().toISOString(), id).run();
 }
 
-// 删除项目及所有关联文件
-function deleteAllMaterialFiles(materials: any[]) {
-  materials.forEach((material: any) => {
-    // 删除图片
-    if (material.images && Array.isArray(material.images)) {
-      material.images.forEach((imgPath: string) => {
-        const fullPath = path.join(process.cwd(), 'public', imgPath);
-        if (fs.existsSync(fullPath)) {
-          fs.unlinkSync(fullPath);
-        }
-      });
-    }
-    // 删除文件
-    if (material.files && Array.isArray(material.files)) {
-      material.files.forEach((filePath: string) => {
-        const fullPath = path.join(process.cwd(), 'public', filePath);
-        if (fs.existsSync(fullPath)) {
-          fs.unlinkSync(fullPath);
-        }
-      });
-    }
-  });
+export async function getDeletedProjects() {
+  const db = getDB();
+  const result = await db.prepare('SELECT * FROM projects WHERE deleted = 1 ORDER BY deletedAt DESC').all();
+  return result.results.map(parseProject);
 }
 
-export function deleteProjectWithFiles(projectId: string) {
-  const materials = readMaterials();
-  const projectMaterials = materials.filter((m: any) => m.projectId === projectId);
-  
-  // 删除关联的文件
-  deleteAllMaterialFiles(projectMaterials);
-  
-  // 删除项目
-  deleteProject(projectId);
-  
-  // 删除材料记录
-  const filteredMaterials = materials.filter((m: any) => m.projectId !== projectId);
-  writeMaterials(filteredMaterials);
+export async function restoreProject(id: string) {
+  const db = getDB();
+  await db.prepare('UPDATE projects SET deleted = 0, deletedAt = NULL WHERE id = ?').bind(id).run();
 }
 
-export function softDeleteProject(id: string) {
-  const projects = readProjects();
-  const index = projects.findIndex((p: any) => p.id === id);
-  if (index !== -1) {
-    projects[index].deleted = true;
-    projects[index].deletedAt = new Date().toISOString();
-    projects[index].deletedBy = null;
-    writeProjects(projects);
-  }
+export async function deleteProject(id: string) {
+  const db = getDB();
+  await db.prepare('DELETE FROM projects WHERE id = ?').bind(id).run();
 }
 
-export function getDeletedProjects() {
-  const projects = readProjects();
-  return projects.filter((p: any) => p.deleted === true).sort((a: any, b: any) => 
-    new Date(b.deletedAt).getTime() - new Date(a.deletedAt).getTime()
-  );
+export async function deleteProjectWithFiles(projectId: string) {
+  const db = getDB();
+  await db.prepare('DELETE FROM materials WHERE projectId = ?').bind(projectId).run();
+  await deleteProject(projectId);
 }
 
-export function restoreProject(id: string) {
-  const projects = readProjects();
-  const index = projects.findIndex((p: any) => p.id === id);
-  if (index !== -1) {
-    projects[index].deleted = false;
-    delete projects[index].deletedAt;
-    delete projects[index].deletedBy;
-    writeProjects(projects);
-  }
-}
-
-export function permanentlyDeleteProject(id: string) {
-  const materials = readMaterials();
-  const projectMaterials = materials.filter((m: any) => m.projectId === id);
-  
-  // 删除所有文件
-  deleteAllMaterialFiles(projectMaterials);
-  
-  // 删除项目
-  deleteProject(id);
-  
-  // 删除材料记录
-  const filteredMaterials = materials.filter((m: any) => m.projectId !== id);
-  writeMaterials(filteredMaterials);
+export async function permanentlyDeleteProject(id: string) {
+  await deleteProjectWithFiles(id);
 }
 
 // ==================== 材料操作 ====================
 
-// 材料类型
-export type MaterialType = 'image' | 'file';
+function parseProject(row: any) {
+  return {
+    ...row,
+    deleted: row.deleted === 1,
+    selectedProducts: (() => { try { return JSON.parse(row.selectedProducts || '[]'); } catch { return []; } })()
+  };
+}
 
-/**
- * 创建材料记录
- * @param data 材料数据
- * @param data.projectId 项目ID
- * @param data.materialName 材料名称
- * @param data.materialGroup 分组（产品ID 或 'project'）
- * @param data.productionLineId 产线ID（可选）
- * @param data.isProjectMaterial 是否为项目材料
- */
-export function createMaterial(data: { 
-  projectId: string; 
-  materialName: string; 
+function parseMaterial(row: any) {
+  return {
+    ...row,
+    isProjectMaterial: row.isProjectMaterial === 1,
+    images: (() => { try { return JSON.parse(row.images || '[]'); } catch { return []; } })(),
+    files: (() => { try { return JSON.parse(row.files || '[]'); } catch { return []; } })()
+  };
+}
+
+export async function createMaterial(data: {
+  projectId: string;
+  materialName: string;
   materialGroup: string;
   productionLineId?: string;
   isProjectMaterial?: boolean;
 }) {
-  const materials = readMaterials();
-  const material = {
-    id: uuidv4(),
-    projectId: data.projectId,
-    materialName: data.materialName,
-    materialGroup: data.materialGroup,  // 产品ID 或 'project'
-    productionLineId: data.productionLineId || null,  // 产线ID
-    isProjectMaterial: data.isProjectMaterial || false,  // 是否为项目材料
-    images: [],  // 图片列表
-    files: [],   // 文件列表
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  materials.push(material);
-  writeMaterials(materials);
-  return material;
+  const db = getDB();
+  const id = uuidv4();
+  const now = new Date().toISOString();
+  await db.prepare(
+    'INSERT INTO materials (id, projectId, materialName, materialGroup, isProjectMaterial, images, files, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).bind(id, data.projectId, data.materialName, data.materialGroup, data.isProjectMaterial ? 1 : 0, '[]', '[]', now, now).run();
+
+  return { id, ...data, isProjectMaterial: data.isProjectMaterial || false, images: [], files: [], createdAt: now, updatedAt: now };
 }
 
-export function getMaterialsByProjectId(projectId: string) {
-  const materials = readMaterials();
-  return materials.filter((m: any) => m.projectId === projectId);
+export async function getMaterialsByProjectId(projectId: string) {
+  const db = getDB();
+  const result = await db.prepare('SELECT * FROM materials WHERE projectId = ?').bind(projectId).all();
+  return result.results.map(parseMaterial);
 }
 
-export function getMaterialById(id: string) {
-  const materials = readMaterials();
-  return materials.find((m: any) => m.id === id);
+export async function getMaterialById(id: string) {
+  const db = getDB();
+  const row = await db.prepare('SELECT * FROM materials WHERE id = ?').bind(id).first();
+  return row ? parseMaterial(row) : null;
 }
 
-/**
- * 更新材料 - 同时更新图片和文件
- */
-export function updateMaterial(id: string, data: { images?: string[]; files?: string[] }) {
-  const materials = readMaterials();
-  const index = materials.findIndex((m: any) => m.id === id);
-  if (index === -1) throw new Error('材料不存在');
-  
-  if (data.images !== undefined) {
-    materials[index].images = data.images;
+export async function updateMaterial(id: string, data: { images?: string[]; files?: string[] }) {
+  const db = getDB();
+  const now = new Date().toISOString();
+  const sets: string[] = ['updatedAt = ?'];
+  const values: any[] = [now];
+
+  if (data.images !== undefined) { sets.push('images = ?'); values.push(JSON.stringify(data.images)); }
+  if (data.files !== undefined) { sets.push('files = ?'); values.push(JSON.stringify(data.files)); }
+
+  values.push(id);
+  await db.prepare(`UPDATE materials SET ${sets.join(', ')} WHERE id = ?`).bind(...values).run();
+  return await getMaterialById(id);
+}
+
+export async function getOrCreateMaterial(projectId: string, materialName: string, materialGroup: string, productionLineId?: string, isProjectMaterial?: boolean) {
+  const db = getDB();
+  const existing = await db.prepare(
+    'SELECT * FROM materials WHERE projectId = ? AND materialName = ? AND materialGroup = ?'
+  ).bind(projectId, materialName, materialGroup).first();
+
+  if (existing) return parseMaterial(existing);
+  return await createMaterial({ projectId, materialName, materialGroup, productionLineId, isProjectMaterial });
+}
+
+export async function batchCreateProductMaterials(projectId: string, productionLineId: string, productId: string, materials: string[]) {
+  for (const materialName of materials) {
+    await getOrCreateMaterial(projectId, materialName, productId, productionLineId, false);
   }
-  if (data.files !== undefined) {
-    materials[index].files = data.files;
+}
+
+export async function batchCreateProjectMaterials(projectId: string, materials: string[]) {
+  for (const materialName of materials) {
+    await getOrCreateMaterial(projectId, materialName, 'project', undefined, true);
   }
-  materials[index].updatedAt = new Date().toISOString();
-  writeMaterials(materials);
-  return materials[index];
 }
 
-/**
- * 获取或创建材料
- */
-export function getOrCreateMaterial(projectId: string, materialName: string, materialGroup: string, productionLineId?: string, isProjectMaterial?: boolean) {
-  const materials = readMaterials();
-  let material = materials.find((m: any) => 
-    m.projectId === projectId && 
-    m.materialName === materialName && 
-    m.materialGroup === materialGroup
-  );
-  
-  if (!material) {
-    material = createMaterial({ projectId, materialName, materialGroup, productionLineId, isProjectMaterial });
-  }
-  return material;
-}
-
-/**
- * 批量创建产品材料
- * @param projectId 项目ID
- * @param productionLineId 产线ID
- * @param productId 产品ID
- * @param materials 材料名称列表
- */
-export function batchCreateProductMaterials(projectId: string, productionLineId: string, productId: string, materials: string[]) {
-  materials.forEach(materialName => {
-    getOrCreateMaterial(projectId, materialName, productId, productionLineId, false);
-  });
-}
-
-/**
- * 批量创建项目材料
- * @param projectId 项目ID
- * @param materials 材料名称列表
- */
-export function batchCreateProjectMaterials(projectId: string, materials: string[]) {
-  materials.forEach(materialName => {
-    getOrCreateMaterial(projectId, materialName, 'project', undefined, true);
-  });
-}
-
-/**
- * 删除产品的所有材料记录
- */
-export function deleteProductMaterials(projectId: string, productId: string) {
-  const materials = readMaterials();
-  const productMaterials = materials.filter((m: any) => 
-    m.projectId === projectId && m.materialGroup === productId
-  );
-  
-  // 删除关联文件
-  deleteAllMaterialFiles(productMaterials);
-  
-  // 删除材料记录
-  const filteredMaterials = materials.filter((m: any) => 
-    !(m.projectId === projectId && m.materialGroup === productId)
-  );
-  writeMaterials(filteredMaterials);
+export async function deleteProductMaterials(projectId: string, productId: string) {
+  const db = getDB();
+  await db.prepare('DELETE FROM materials WHERE projectId = ? AND materialGroup = ?').bind(projectId, productId).run();
 }
