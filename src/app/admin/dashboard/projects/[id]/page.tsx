@@ -308,7 +308,7 @@ export default function AdminProjectDetail() {
                           <h3 className="font-medium text-gray-800">{pm.name}</h3>
                           
                           {/* 图片预览 */}
-                          {material?.images?.length > 0 && (
+                          {material && material.images && material.images.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-3">
                               {material.images.map((img, imgIdx) => (
                                 <img
